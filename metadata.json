@@ -1,0 +1,10 @@
+{
+  "name": "Remix: Fixcell",
+  "description": "Sistema de gestión de inventarios, POS y centro de reparaciones de celulares Fixcell.",
+  "requestFramePermissions": [
+    "camera"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

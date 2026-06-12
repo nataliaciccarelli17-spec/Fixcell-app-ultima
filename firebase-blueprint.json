@@ -1,0 +1,119 @@
+{
+  "entities": {
+    "productos": {
+      "title": "Producto",
+      "description": "Artículos en inventario y accesorios para celulares",
+      "type": "object",
+      "properties": {
+        "codigoInterno": { "type": "string", "description": "Código interno del producto" },
+        "codigoBarras": { "type": "string", "description": "Código de barras único para escaneo" },
+        "nombre": { "type": "string", "description": "Nombre comercial del producto" },
+        "categoria": { "type": "string", "description": "Categoría (Funda, Vidrio templado, etc.)" },
+        "marca": { "type": "string", "description": "Marca del accesorio/producto" },
+        "descripcion": { "type": "string", "description": "Descripción detallada" },
+        "precioCosto": { "type": "number", "description": "Precio de costo original" },
+        "precioVenta": { "type": "number", "description": "Precio de venta al público" },
+        "stockActual": { "type": "number", "description": "Cantidad actualmente en depósito" },
+        "stockMinimo": { "type": "number", "description": "Cantidad mínima para alertas de stock bajo" },
+        "proveedor": { "type": "string", "description": "Nombre o ID del proveedor de origen" },
+        "fechaIngreso": { "type": "string", "description": "Fecha de registro de ingreso" },
+        "marcaCompatible": { "type": "string", "description": "Marca compatible (Samsung, Apple, Motorola, etc.)" },
+        "modeloCompatible": { "type": "string", "description": "Modelo compatible (A15, S24, iPhone 15, etc.)" },
+        "color": { "type": "string", "description": "Color del accesorio" },
+        "tipoAccesorio": { "type": "string", "description": "Tipo específico de accesorio" }
+      },
+      "required": ["codigoBarras", "nombre", "precioCosto", "precioVenta", "stockActual"]
+    },
+    "ventas": {
+      "title": "Venta",
+      "description": "Transacciones POS registradas en el local",
+      "type": "object",
+      "properties": {
+        "fecha": { "type": "string", "description": "Fecha y hora de la venta" },
+        "vendedorUid": { "type": "string", "description": "ID del vendedor" },
+        "vendedorNombre": { "type": "string", "description": "Nombre del vendedor que registró la venta" },
+        "metodoPago": { "type": "string", "description": "Efectivo, Débito, Crédito, Transferencia o Mercado Pago" },
+        "subtotal": { "type": "number", "description": "Suma de los precios de venta" },
+        "gananciaTotal": { "type": "number", "description": "Ganancia total de esta venta (Venta - Costo)" },
+        "items": { "type": "array", "description": "Lista de productos incluidos en la venta" },
+        "clienteDni": { "type": "string", "description": "DNI del cliente si se asignó a un perfil" }
+      },
+      "required": ["fecha", "vendedorUid", "metodoPago", "subtotal", "gananciaTotal", "items"]
+    },
+    "movimientos_stock": {
+      "title": "Movimiento de Stock",
+      "description": "Cambios de mercadería en inventario por ingresos, ventas, reparaciones o ajustes",
+      "type": "object",
+      "properties": {
+        "productId": { "type": "string", "description": "ID del producto" },
+        "productName": { "type": "string", "description": "Nombre del producto en el momento de registro" },
+        "cantidad": { "type": "number", "description": "Cantidad cambiada (puede ser negativa si descuenta)" },
+        "tipo": { "type": "string", "description": "Ingreso, Venta, Ajuste o Servicio Técnico" },
+        "fecha": { "type": "string", "description": "Fecha y hora del movimiento" },
+        "usuario": { "type": "string", "description": "Nombre del usuario que generó el movimiento" },
+        "notas": { "type": "string", "description": "Detalles o justificaciones adicionales" }
+      },
+      "required": ["productId", "productName", "cantidad", "tipo", "fecha", "usuario"]
+    },
+    "reparaciones": {
+      "title": "Reparación",
+      "description": "Orden de trabajo del servicio técnico para un dispositivo",
+      "type": "object",
+      "properties": {
+        "numeroOrden": { "type": "string", "description": "ID/Número único de orden autogenerado" },
+        "estado": { "type": "string", "description": "Estado: Recibido, En diagnóstico, Presupuesto enviado, Esperando aprobación, En reparación, Reparado, Listo para retirar, Entregado, Cancelado" },
+        "fechaIngreso": { "type": "string", "description": "Fecha y hora de ingreso" },
+        "fechaEntrega": { "type": "string", "description": "Fecha y hora de entrega o finalización" },
+        "tecnicoAsignado": { "type": "string", "description": "Nombre del técnico asignado" },
+        "clienteNombre": { "type": "string", "description": "Nombre completo del cliente" },
+        "clienteDni": { "type": "string", "description": "DNI/Documento del cliente" },
+        "clienteTelefono": { "type": "string", "description": "Teléfono de contacto" },
+        "clienteEmail": { "type": "string", "description": "Email" },
+        "clienteDireccion": { "type": "string", "description": "Dirección" },
+        "dispositivoMarca": { "type": "string", "description": "Marca del equipo (Samsung, Motorola, etc.)" },
+        "dispositivoModelo": { "type": "string", "description": "Modelo del equipo" },
+        "dispositivoImei": { "type": "string", "description": "Código IMEI del dispositivo" },
+        "dispositivoColor": { "type": "string", "description": "Color del equipo" },
+        "dispositivoSerial": { "type": "string", "description": "Número de serie" },
+        "dispositivoPassword": { "type": "string", "description": "Contraseña de desbloqueo si la suministró" },
+        "estadoFisico": { "type": "string", "description": "Estado estético al ingresar (rayado, golpeado, etc.)" },
+        "fallaReportada": { "type": "string", "description": "Descripción detallada de la falla" },
+        "fotoUrl": { "type": "string", "description": "Fotografía opcional del equipo al ingresar" },
+        "reparacionCostoRepuestos": { "type": "number", "description": "Costo de los repuestos consumidos de inventario" },
+        "reparacionManoObra": { "type": "number", "description": "Costo de mano de obra del técnico o local" },
+        "reparacionCobrado": { "type": "number", "description": "Precio final asignado al presupuesto o cobrado" },
+        "reparacionGanancia": { "type": "number", "description": "Ganancia de la reparación (Cobrado - Repuestos - Gastos)" },
+        "reparacionFechaVencimientoGarantia": { "type": "string", "description": "Fecha en que expira la garantía otorgada" },
+        "repuestosUtilizados": { "type": "array", "description": "Repuestos asociados del inventario consumidos por esta reparación" },
+        "historialEstados": { "type": "array", "description": "Historial cronológico de cambios de estado" },
+        "firmaDigital": { "type": "string", "description": "Representación de firma del cliente al retirar" }
+      },
+      "required": ["numeroOrden", "estado", "fechaIngreso", "clienteNombre", "clienteDni", "dispositivoMarca", "dispositivoModelo", "fallaReportada"]
+    },
+    "clientes_crm": {
+      "title": "Cliente CRM",
+      "description": "Ficha unificada del cliente disponible para seguimiento e historial",
+      "type": "object",
+      "properties": {
+        "dni": { "type": "string", "description": "DNI único del cliente" },
+        "nombre": { "type": "string", "description": "Nombre y apellido" },
+        "email": { "type": "string", "description": "Email" },
+        "telefono": { "type": "string", "description": "Teléfono" },
+        "direccion": { "type": "string", "description": "Dirección" },
+        "ultimaVisita": { "type": "string", "description": "Fecha del último contacto (compra o reparación)" },
+        "comprasCount": { "type": "number", "description": "Número total de compras en POS" },
+        "reparacionesCount": { "type": "number", "description": "Número total de órdenes de reparación" },
+        "montoGastadoTotal": { "type": "number", "description": "Suma acumulada de todas sus transacciones" },
+        "isVip": { "type": "boolean", "description": "Evaluado automáticamente si es VIP por compras frecuentes o monto" }
+      },
+      "required": ["dni", "nombre", "montoGastadoTotal"]
+    }
+  },
+  "firestore": {
+    "/productos/{id}": { "schema": "#/entities/productos", "description": "Inventario de productos y accesorios" },
+    "/ventas/{id}": { "schema": "#/entities/ventas", "description": "Historial de ventas del comercio" },
+    "/movimientos_stock/{id}": { "schema": "#/entities/movimientos_stock", "description": "Bitácora detallada de entradas/salidas de repuestos y productos" },
+    "/reparaciones/{id}": { "schema": "#/entities/reparaciones", "description": "Órdenes de servicio técnico y reparación" },
+    "/clientes_crm/{id}": { "schema": "#/entities/clientes_crm", "description": "Directorio CRM consolidado de clientes" }
+  }
+}

@@ -1,0 +1,131 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // 1. Global Safety Net - Default Deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Reuseable global helpers
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isEmailVerified() {
+      return request.auth.token.email_verified == true;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isOwner(ownerId) {
+      return isSignedIn() && request.auth.uid == ownerId;
+    }
+
+    // Helper to fetch the user role from /usuarios/{uid} collection
+    function getUserData() {
+      return get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        request.auth.token.email == 'nataliaciccarelli17@gmail.com' ||
+        request.auth.token.email == 'admin@celustock.com' ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid)) ||
+        (exists(/databases/$(database)/documents/usuarios/$(request.auth.uid)) && getUserData().role == 'Administrador')
+      );
+    }
+
+    // Check if the update affects cost fields (only Admin can modify them)
+    function isModifyingCosts(item) {
+      return item.diff(resource.data).affectedKeys().hasAny(['precioCosto']);
+    }
+
+    // Products collection security rules
+    match /productos/{id} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && (
+        request.resource.data.keys().hasAll(['codigoBarras', 'nombre', 'precioCosto', 'precioVenta', 'stockActual']) &&
+        request.resource.data.nombre is string &&
+        request.resource.data.nombre.size() > 0 &&
+        request.resource.data.precioCosto is number &&
+        request.resource.data.precioVenta is number &&
+        request.resource.data.stockActual is number
+      );
+      allow update: if isSignedIn() && (
+        // Only Admin can modify cost or delete. Rest of employees can modify stock or other fields.
+        (!isModifyingCosts(request.resource.data) || isAdmin()) &&
+        request.resource.data.nombre is string &&
+        request.resource.data.precioVenta is number &&
+        request.resource.data.stockActual is number
+      );
+      allow delete: if isAdmin();
+    }
+
+    // Sales collection security rules
+    match /ventas/{id} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && (
+        request.resource.data.keys().hasAll(['fecha', 'vendedorUid', 'metodoPago', 'subtotal', 'gananciaTotal', 'items']) &&
+        request.resource.data.subtotal is number &&
+        request.resource.data.gananciaTotal is number &&
+        request.resource.data.items is list
+      );
+      allow update, delete: if isAdmin();
+    }
+
+    // Stock Movements collection security rules
+    match /movimientos_stock/{id} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && (
+        request.resource.data.keys().hasAll(['productId', 'productName', 'cantidad', 'tipo', 'fecha', 'usuario']) &&
+        request.resource.data.cantidad is number &&
+        request.resource.data.tipo is string
+      );
+      allow update, delete: if isAdmin();
+    }
+
+    // Repairs collection security rules
+    match /reparaciones/{id} {
+      // Allow read for everyone to enable public tracking lookup
+      allow read: if true; 
+      
+      allow create: if isSignedIn() && (
+        request.resource.data.keys().hasAll(['numeroOrden', 'estado', 'fechaIngreso', 'clienteNombre', 'clienteDni', 'dispositivoMarca', 'dispositivoModelo', 'fallaReportada']) &&
+        request.resource.data.clienteNombre is string &&
+        request.resource.data.clienteDni is string
+      );
+      allow update: if isSignedIn() && (
+        // Employees can change states and details, only admin can delete/modify crucial billing override if desired
+        request.resource.data.estado is string
+      );
+      allow delete: if isAdmin();
+    }
+
+    // CRM Clients collection security rules
+    match /clientes_crm/{id} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && (
+        request.resource.data.keys().hasAll(['dni', 'nombre', 'montoGastadoTotal']) &&
+        request.resource.data.dni is string &&
+        request.resource.data.nombre is string
+      );
+      allow update: if isSignedIn();
+      allow delete: if isAdmin();
+    }
+
+    // Users and Roles collection
+    match /usuarios/{uid} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn() && (request.auth.uid == uid || isAdmin());
+    }
+
+    // Admins static lookup
+    match /admins/{uid} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+  }
+}
